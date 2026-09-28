@@ -4,6 +4,7 @@ import express from "express";
 import pkg from "@slack/bolt";
 import { WebClient } from "@slack/web-api";
 import { ChatOpenAI } from "@langchain/openai";
+import { email } from "zod";
 
 dotenv.config();
 
@@ -80,9 +81,13 @@ class SlackAIAgent {
       this.app.post("/test/analyze-member", async (req, res) => {
         try {
           const { memberInfo } = req.body;
-          if (!memberInfo)
+
+          if (!memberInfo) {
             return res.status(400).json({ error: "memberInfo is required" });
+          }
+
           const analysis = await this.analyzeAndPostMember(memberInfo);
+
           res.json({
             success: true,
             analysis,
@@ -102,4 +107,24 @@ class SlackAIAgent {
       res.status(500).json({ error: "Internal server error" });
     });
   }
+
+  async getUserInfo(userId) {
+    const { user } = await this.webClient.users.info({ user: userId });
+
+    return {
+      id: user.id,
+      name: user.real_name || user.name,
+      username: user.name,
+      email: user.profile?.email,
+      title: user.profile?.title,
+      timezone: user.tz,
+      profile: {
+        firstName: user.profile?.first_name,
+        lastName: user.profile?.last_name,
+        statusText: user.profile?.status_text,
+      },
+    };
+  }
+
+  async analyzeAndPostMember() {}
 }
