@@ -1,15 +1,13 @@
-import { App } from "@slack/bolt";
+import pkg from "@slack/bolt";
+const { App } = pkg;
 import dotenv from "dotenv";
 import express from "express";
-import pkg from "@slack/bolt";
 import { WebClient } from "@slack/web-api";
 import { ChatOpenAI } from "@langchain/openai";
 import axios from "axios";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 
 dotenv.config();
-
-const { App } = pkg;
 
 const log = {
   info: (msg, ...args) => console.log(`[INFO] ${msg}`, ...args),
