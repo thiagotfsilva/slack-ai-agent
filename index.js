@@ -6,7 +6,13 @@ import { WebClient } from "@slack/web-api";
 import { ChatOpenAI } from "@langchain/openai";
 import axios from "axios";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { initDataBase } from "./db";
+import { z } from "zod";
+import {
+  closeDatabase,
+  initDataBase,
+  markAsSentToSlack,
+  saveMemberAnalysis,
+} from "./db.js";
 
 dotenv.config();
 
@@ -32,10 +38,12 @@ class SlackAIAgent {
     this.webClient = new WebClient(process.env.SLACK_BOT_TOKEN);
 
     this.openAi = new ChatOpenAI({
-      baseURL: process.env.OPENROUTER_BASE_URL,
       model: "openai/gpt-4o-mini",
       temperature: 0.3,
       apiKey: process.env.OPENROUTER_API_KEY,
+      configuration: {
+        baseURL: process.env.OPENROUTER_BASE_URL,
+      },
     });
 
     this.setupSlackEvents();
@@ -171,9 +179,10 @@ class SlackAIAgent {
           }
         }
       }
+      return results;
     } catch (error) {
       log.error("Research error: ", error.message);
-      return null;
+      return [];
     }
   }
 
@@ -258,14 +267,21 @@ class SlackAIAgent {
     );
 
     try {
+      const analysisSchema = z.object({
+        fitScore: z.number().int().min(0).max(100),
+        insights: z.array(z.string()).min(3).max(5),
+        recommendations: z.array(z.string()).min(2).max(4),
+      });
+      const structuredModel = this.openAi.withStructuredOutput(analysisSchema);
+      const safeResearchData = Array.isArray(researchData) ? researchData : [];
       const researchSummary =
-        researchData.length > 0
-          ? researchData.map((r) => `${r.title}: ${r.content}`).join(`\\n`)
+        safeResearchData.length > 0
+          ? safeResearchData.map((r) => `${r.title}: ${r.content}`).join(`\\n`)
           : "Limited research data available";
 
-      const chain = prompt.pipe(this.openAi);
+      const chain = prompt.pipe(structuredModel);
 
-      result = await chain.invoke({
+      return await chain.invoke({
         name: memberInfo.name,
         email: memberInfo.email || "Not provided",
         title: memberInfo.title || "Not provided",
