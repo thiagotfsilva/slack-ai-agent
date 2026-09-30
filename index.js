@@ -6,6 +6,7 @@ import { WebClient } from "@slack/web-api";
 import { ChatOpenAI } from "@langchain/openai";
 import axios from "axios";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { initDataBase } from "./db";
 
 dotenv.config();
 

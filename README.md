@@ -100,12 +100,12 @@ Exemplo de corpo:
 
 ```json
 {
-	"memberInfo": {
-		"id": "U0123456789",
-		"name": "Ada Lovelace",
-		"email": "ada@example.com",
-		"title": "Engineering Lead"
-	}
+ "memberInfo": {
+  "id": "U0123456789",
+  "name": "Ada Lovelace",
+  "email": "ada@example.com",
+  "title": "Engineering Lead"
+ }
 }
 ```
 
