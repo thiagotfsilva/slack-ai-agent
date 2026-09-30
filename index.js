@@ -82,7 +82,7 @@ class SlackAIAgent {
     this.app.use(express.json());
 
     this.app.get("/helathy", (req, res) => {
-      res.json({ status: "healthy", timestamp: new Date.toISOString() });
+      res.json({ status: "healthy", timestamp: new Date().toISOString() });
     });
 
     if (process.env.NODE_ENV === "development") {
@@ -333,7 +333,7 @@ class SlackAIAgent {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: `*Recommendations:*\n${analysis.recommendations
+          text: `*Insights:*\n${analysis.insights
             .map((i) => `• ${i}`)
             .join("\n")}`,
         },
@@ -361,19 +361,6 @@ class SlackAIAgent {
         },
       ],
     });
-
-    await this.webClient.chat.postMessage({
-      channel: process.env.SLACK_PRIVATE_CHANNEL_ID,
-      text: `New Member Analysis: ${member.name} (${analysis.fitScore}/100)`,
-      attachments: [
-        {
-          color: color,
-          blocks: blocks,
-        },
-      ],
-    });
-
-    log.info(`Analysis posted to channel for ${member.name}`);
   }
 
   async start() {
