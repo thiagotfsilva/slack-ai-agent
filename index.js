@@ -361,6 +361,19 @@ class SlackAIAgent {
         },
       ],
     });
+
+    await this.webClient.chat.postMessage({
+      channel: process.env.SLACK_PRIVATE_CHANNEL_ID,
+      text: `New Member Analysis: ${member.name} (${analysis.fitScore}/100)`,
+      attachments: [
+        {
+          color: color,
+          blocks: blocks,
+        },
+      ],
+    });
+
+    log.info(`Analysis posted to channel for ${member.name}`);
   }
 
   async start() {
